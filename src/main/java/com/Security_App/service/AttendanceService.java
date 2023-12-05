@@ -14,6 +14,7 @@ import com.Security_App.dto.AttendanceResponseDto;
 import com.Security_App.dto.CommonApiResponse;
 import com.Security_App.entity.Attendance;
 import com.Security_App.entity.User;
+import com.Security_App.repository.AttendanceDetails;
 import com.Security_App.repository.AttendanceRepository;
 import com.Security_App.repository.UserRepository;
 import com.Security_App.utils.Constants.UserStatus;
@@ -126,7 +127,9 @@ public class AttendanceService {
 		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	public ResponseEntity<AttendanceResponseDto> findAttendanceForUserByMonth(Long userId, int year, int month) {
+	// Method to get Monthly Details of Particular user by passing userId,year and
+	// month
+	public ResponseEntity<AttendanceResponseDto> findAttendanceForUserByMonth(Long userId, int month, int year) {
 		AttendanceResponseDto response = new AttendanceResponseDto();
 		try {
 			if (userId == 0 || year == 0 || month == 0) {
@@ -135,10 +138,100 @@ public class AttendanceService {
 				return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 			}
 
-			List<Attendance> lst = attendanceRepository.findAttendanceForUserByMonth(userId, year, month);
+			List<Attendance> lst = attendanceRepository.findAttendanceForUserByMonth(userId, month, year);
 
 			if (lst.isEmpty()) {
 				response.setResponseMessage("No Data Found...");
+				response.setSuccess(false);
+				return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+			}
+			response.setResponseMessage(" Attadance Details Fetched successfully");
+			response.setAttendances(lst);
+			response.setSuccess(true);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		response.setResponseMessage("SOMETHING_WENT_WRONG");
+		response.setSuccess(false);
+		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+
+	}
+
+	public ResponseEntity<AttendanceResponseDto> getMonthlyAttendanceForAllUsers(int month, int year) {
+		AttendanceResponseDto response = new AttendanceResponseDto();
+		try {
+			List<AttendanceDetails> lst = attendanceRepository.findAttendanceDetailsByMonthAndYear(month, year);
+
+			if (lst.isEmpty()) {
+				response.setResponseMessage("No Data Found...");
+				response.setSuccess(false);
+				return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+			}
+			response.setResponseMessage(" Attadance Details Fetched successfully");
+			response.setLst(lst);
+			response.setSuccess(true);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		response.setResponseMessage("SOMETHING_WENT_WRONG");
+		response.setSuccess(false);
+		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+
+	}
+
+	public ResponseEntity<AttendanceResponseDto> getAllAttendanceForDate(LocalDate date) {
+		AttendanceResponseDto response = new AttendanceResponseDto();
+		try {
+			if (date == null) {
+				response.setResponseMessage("Missing Inputs");
+				response.setSuccess(false);
+				return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+			}
+
+			List<Attendance> lst = attendanceRepository.findAllByLogindate(date);
+
+			if (lst.isEmpty()) {
+				response.setResponseMessage("No Data Found...");
+				response.setSuccess(false);
+				return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+			}
+			response.setResponseMessage(" Attadance Details Fetched successfully");
+			response.setAttendances(lst);
+			response.setSuccess(true);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		response.setResponseMessage("SOMETHING_WENT_WRONG");
+		response.setSuccess(false);
+		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+
+	}
+
+	public ResponseEntity<AttendanceResponseDto> getAttendanceForUserOnDate(Long userId, LocalDate loginDate) {
+		AttendanceResponseDto response = new AttendanceResponseDto();
+		try {
+			if (loginDate == null || userId == 0) {
+				response.setResponseMessage("Missing Inputs");
+				response.setSuccess(false);
+				return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+			}
+
+			User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE.value());
+			if (user == null) {
+				response.setResponseMessage("No User Found....");
+				response.setSuccess(false);
+				return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+			}
+			List<Attendance> lst = attendanceRepository.findAllByUserIdAndLogindate(userId, loginDate);
+
+			if (lst.isEmpty()) {
+				response.setResponseMessage("No Data Found...,User not Logged In On " + loginDate);
 				response.setSuccess(false);
 				return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 			}
