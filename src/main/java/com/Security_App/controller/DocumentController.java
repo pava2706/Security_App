@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.Security_App.dto.CommonApiResponse;
+import com.Security_App.dto.DocumentResponseDto;
 import com.Security_App.service.DocumentService;
 
 @RestController
@@ -39,15 +40,9 @@ public class DocumentController {
 	}
 
 	// Method to Fetch addarcard
-	@GetMapping("fetch/addar/image/{addar}")
-	public ResponseEntity<byte[]> findAddar(@PathVariable("addar") String addar) {
-		return documentService.findAddar(addar);
-	}
-
-	// Method to Fetch pancard
-	@GetMapping("fetch/pan/image/{pan}")
-	public ResponseEntity<byte[]> findPan(@PathVariable("pan") String pan) {
-		return documentService.findpan(pan);
+	@GetMapping("fetch/document/imageurl/{url}")
+	public ResponseEntity<byte[]> findDocument(@PathVariable("url") String url) {
+		return documentService.findDocument(url);
 	}
 
 	// Method to delete Particular user document
@@ -55,5 +50,19 @@ public class DocumentController {
 	public ResponseEntity<CommonApiResponse> deleteDocument(@PathVariable("docid") Long docId) {
 		return documentService.deleteDocument(docId);
 	}
+	
+	//Method Fetch All Users Document
 
+@GetMapping("fetch/all/documents")
+	
+	public ResponseEntity<DocumentResponseDto> findDocuments() {
+		return documentService.findDocuments();
+	}
+	
+	//Method Fetch All Users Document
+
+		@GetMapping("fetch/document/byid/{id}")
+		public ResponseEntity<DocumentResponseDto> findDocumentById(@PathVariable("id") Long id) {
+			return documentService.findDocumentById(id);
+		}
 }

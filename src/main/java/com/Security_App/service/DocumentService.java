@@ -18,9 +18,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.Security_App.dto.CommonApiResponse;
+import com.Security_App.dto.DocumentResponseDto;
 import com.Security_App.entity.Document;
 import com.Security_App.entity.User;
 import com.Security_App.repository.DocumentRepository;
@@ -162,42 +164,13 @@ public class DocumentService {
 
 	// Method to Fetch Addarcard
 
-	public ResponseEntity<byte[]> findAddar(String add) {
+	public ResponseEntity<byte[]> findDocument(String url) {
 		try {
 
-			Resource addar = storageService.load(add);
+			Resource doc = storageService.load(url);
 
-			if (addar != null && addar.exists()) {
-				try (InputStream in = addar.getInputStream()) {
-					byte[] imageBytes = IOUtils.toByteArray(in);
-
-					// Detect the image type by inspecting its content
-					String imageFormat = getImageFormat(imageBytes);
-
-					// Set content type dynamically based on detected image format
-					MediaType mediaType = MediaType.parseMediaType("image/" + imageFormat.toLowerCase());
-					ResponseEntity<byte[]> imageResponseEntity = CustomerUtils.getImageResponseEntity(imageBytes,
-							mediaType);
-					return imageResponseEntity;
-				} catch (IOException e) {
-					e.printStackTrace();
-					return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-	}
-
-	// Method to Fetch pancard
-	public ResponseEntity<byte[]> findpan(String pans) {
-		try {
-
-			Resource pan = storageService.load(pans);
-
-			if (pan != null && pan.exists()) {
-				try (InputStream in = pan.getInputStream()) {
+			if (doc != null && doc.exists()) {
+				try (InputStream in = doc.getInputStream()) {
 					byte[] imageBytes = IOUtils.toByteArray(in);
 
 					// Detect the image type by inspecting its content
@@ -261,6 +234,56 @@ public class DocumentService {
 		response.setResponseMessage("SOMETHING_WENT_WRONG");
 		response.setSuccess(false);
 		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	public ResponseEntity<DocumentResponseDto> findDocuments() {
+		DocumentResponseDto response = new DocumentResponseDto();
+		try {
+
+			List<Document> documents = documentRepository.findAll();
+			if (CollectionUtils.isEmpty(documents)) {
+				response.setResponseMessage("No Documents Found ..");
+				response.setSuccess(false);
+				return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+			}
+			response.setResponseMessage("Documents Fetched Sucesfully...");
+			response.setSuccess(true);
+			response.setDocuments(documents);
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		response.setResponseMessage("SOMETHING_WENT_WRONG");
+		response.setSuccess(false);
+		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+
+	}
+
+	public ResponseEntity<DocumentResponseDto> findDocumentById(Long id) {
+		DocumentResponseDto response = new DocumentResponseDto();
+		try {
+
+			Optional<Document> documents = documentRepository.findById(id);
+
+			if (documents.isEmpty()) {
+				response.setResponseMessage("No Documents Found ..");
+				response.setSuccess(false);
+				return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+			}
+			Document document = documents.get();
+			response.setResponseMessage("Documents Fetched Sucesfully...");
+			response.setSuccess(true);
+			response.setDocument(document);
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		response.setResponseMessage("SOMETHING_WENT_WRONG");
+		response.setSuccess(false);
+		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+
 	}
 
 }

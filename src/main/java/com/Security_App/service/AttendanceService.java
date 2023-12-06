@@ -1,11 +1,22 @@
 package com.Security_App.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Iterator;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +28,7 @@ import com.Security_App.entity.User;
 import com.Security_App.repository.AttendanceDetails;
 import com.Security_App.repository.AttendanceRepository;
 import com.Security_App.repository.UserRepository;
+import com.Security_App.utils.CustomerUtils;
 import com.Security_App.utils.Constants.UserStatus;
 
 @Service
@@ -247,6 +259,49 @@ public class AttendanceService {
 		response.setSuccess(false);
 		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 
+	}
+
+	// Method to Fetch Login Selfie
+
+	public ResponseEntity<byte[]> findSelfieImage(String selfies) {
+
+		try {
+			Resource selfie = storageService.load(selfies);
+
+			if (selfie != null && selfie.exists()) {
+				try (InputStream in = selfie.getInputStream()) {
+					byte[] imageBytes = IOUtils.toByteArray(in);
+
+					// Detect the image type by inspecting its content
+					String imageFormat = getImageFormat(imageBytes);
+
+					// Set content type dynamically based on detected image format
+					MediaType mediaType = MediaType.parseMediaType("image/" + imageFormat.toLowerCase());
+					ResponseEntity<byte[]> imageResponseEntity = CustomerUtils.getImageResponseEntity(imageBytes,
+							mediaType);
+					return imageResponseEntity;
+				} catch (IOException e) {
+					e.printStackTrace();
+					return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	// Method to detect the image format based on its content
+	private String getImageFormat(byte[] imageBytes) throws IOException {
+		try (InputStream is = new ByteArrayInputStream(imageBytes);
+				ImageInputStream imageInputStream = ImageIO.createImageInputStream(is)) {
+			Iterator<ImageReader> readers = ImageIO.getImageReaders(imageInputStream);
+			if (readers.hasNext()) {
+				ImageReader reader = readers.next();
+				return reader.getFormatName();
+			}
+		}
+		throw new IOException("Unknown image format");
 	}
 
 }

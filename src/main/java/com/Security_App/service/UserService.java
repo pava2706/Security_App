@@ -219,7 +219,7 @@ public class UserService {
 			user.setOtp(null);
 			user.setExpiryTime(null);
 			userRepository.save(user);
-			jwtToken = jwtUtils.generateToken(user.getEmail());
+			jwtToken = jwtUtils.generateToken(user.getPhoneNumber());
 
 			// user is authenticated
 			if (jwtToken != null) {
@@ -465,7 +465,7 @@ public class UserService {
 			userRepository.save(data); // Save user with OTP and expiry time
 
 			response.setResponseMessage(
-					"OTP sent successfully to the registered phone number:- " + recipientPhoneNumber);
+					"OTP sent sucessfully to the registered phone number:- " + recipientPhoneNumber);
 			response.setSuccess(true);
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (Exception e) {

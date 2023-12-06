@@ -11,4 +11,6 @@ import lombok.Data;
 public class DocumentResponseDto extends CommonApiResponse {
 
 	List<Document> documents = new ArrayList<>();
+	
+	private Document document;
 }

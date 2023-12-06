@@ -75,7 +75,14 @@ public class AttendanceController {
 	@GetMapping("get/dailydetails")
 	public ResponseEntity<AttendanceResponseDto> getAttendanceForUserOnDate(@RequestParam("userId") Long userId,
 			@RequestParam("date") String date) {
-			LocalDate loginDate = LocalDate.parse(date);
-			return attendanceService.getAttendanceForUserOnDate(userId, loginDate);
-}
+		LocalDate loginDate = LocalDate.parse(date);
+		return attendanceService.getAttendanceForUserOnDate(userId, loginDate);
+	}
+
+	// Method to Fetch SelfieImage
+	@GetMapping("fetch/selfie/image/{selfie}")
+	public ResponseEntity<byte[]> findSelfieImage(@PathVariable("selfie") String selfie) {
+		return attendanceService.findSelfieImage(selfie);
+	}
+
 }
